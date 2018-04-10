@@ -16,6 +16,21 @@ use ilateral\SilverStripe\Gallery\Control\GalleryHubController;
  */
 class GalleryHub extends Page
 {
+    /**
+     * Option to scale images from template files instead of from the Page's settings.
+     *
+     * If this is set to true, then
+     * - For GallerHubs: use $Image instead of $GalleryThumbnail in GalleryHub.ss
+     * - For GalleryPages: change Gallery.ss to contain something like this:
+     *   <% loop $PaginatedImages %>
+     *     <img src="$Fill(150,150).URL" alt="$Title.ATT" data-url="$Fit(950,500).URL">
+     *   <% end_loop %>
+     *
+     * @config
+     *
+     * @var boolean
+     */
+    private static $scale_from_template = false;
 
     /**
      * @var string
@@ -59,18 +74,27 @@ class GalleryHub extends Page
     {
         $fields = parent::getSettingsFields();
 
+        $settings = [
+            CheckboxField::create('ShowSideBar'),
+            CheckboxField::create('ShowImageTitles'),
+            NumericField::create('ThumbnailsPerPage'),
+        ];
+        if (!self::config()->get('scale_from_template')) {
+            $settings = array_merge(
+                $settings,
+                [
+                    NumericField::create("ThumbnailWidth"),
+                    NumericField::create("ThumbnailHeight"),
+                    DropdownField::create("ThumbnailResizeType")
+                        ->setSource($this->dbObject("ThumbnailResizeType")->enumValues()),
+                    TextField::create("PaddedImageBackground")
+                ]
+            );
+        }
+
         $fields->addFieldsToTab(
             "Root.Settings",
-            [
-                CheckboxField::create('ShowSideBar'),
-                CheckboxField::create('ShowImageTitles'),
-                NumericField::create("ThumbnailWidth"),
-                NumericField::create("ThumbnailHeight"),
-                DropdownField::create("ThumbnailResizeType")
-                    ->setSource($this->dbObject("ThumbnailResizeType")->enumValues()),
-                NumericField::create('ThumbnailsPerPage'),
-                TextField::create("PaddedImageBackground")
-            ]
+            $settings
         );
 
         return $fields;

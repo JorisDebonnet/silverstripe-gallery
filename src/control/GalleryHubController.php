@@ -2,6 +2,7 @@
 
 namespace ilateral\SilverStripe\Gallery\Control;
 
+use ilateral\SilverStripe\Gallery\Model\GalleryHub;
 use PageController;
 use SilverStripe\Assets\Image;
 use SilverStripe\ORM\ArrayList;
@@ -12,7 +13,7 @@ class GalleryHubController extends PageController
 {
     /**
      * Get a custom list of children with resized gallery images
-     * 
+     *
      * @return PaginatedList
      */
     public function PaginatedGalleries()
@@ -26,7 +27,11 @@ class GalleryHubController extends PageController
             $child_data = $child->toMap();
             $child_data["Link"] = $child->Link();
             if ($image) {
-                $child_data["GalleryThumbnail"] = $this->ScaledImage($image, true);
+                if (GalleryHub::config()->get('scale_from_template')) {
+                    $child_data["Image"] = $image;
+                } else {
+                    $child_data["GalleryThumbnail"] = $this->ScaledImage($image, true);
+                }
             } else {
                 $child_data["GalleryThumbnail"] = null;
             }

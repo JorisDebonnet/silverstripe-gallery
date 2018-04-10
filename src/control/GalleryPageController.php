@@ -2,7 +2,7 @@
 
 namespace ilateral\SilverStripe\Gallery\Control;
 
-use PageController;
+use ilateral\SilverStripe\Gallery\Model\GalleryHub;
 use SilverStripe\Assets\Image;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\View\ArrayData;
@@ -46,21 +46,24 @@ class GalleryPageController extends GalleryHubController
         if ($this->Images()->exists()) {
 
             // Create a list of images with generated gallery image and thumbnail
-            $images = ArrayList::create();
             $pages = $this->PaginatedImages();
-            foreach ($this->PaginatedImages() as $image) {
-                $image_data = $image->toMap();
-                $image_data["GalleryImage"] = $this->GalleryImage($image);
-                $image_data["GalleryThumbnail"] = $this->GalleryThumbnail($image);
-                $images->add(ArrayData::create($image_data));
-            }
             
             $vars = [
                 'PaginatedImages' => $pages,
-                'Images' => $images,
                 'Width' => $this->ImageWidth,
                 'Height' => $this->ImageHeight
             ];
+
+            if (!GalleryHub::config()->get('scale_from_template')) {
+                $images = ArrayList::create();
+                foreach ($this->PaginatedImages() as $image) {
+                    $image_data = $image->toMap();
+                    $image_data["GalleryImage"] = $this->GalleryImage($image);
+                    $image_data["GalleryThumbnail"] = $this->GalleryThumbnail($image);
+                    $images->add(ArrayData::create($image_data));
+                }
+                $vars['Images'] = $images;
+            }
 
             return $this->renderWith(
                 [

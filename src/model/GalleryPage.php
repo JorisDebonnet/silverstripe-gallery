@@ -98,15 +98,17 @@ class GalleryPage extends GalleryHub
     public function getSettingsFields() {
         $fields = parent::getSettingsFields();
 
-        $fields->addFieldsToTab(
-            'Root.Settings',
-            [
-                NumericField::create("ImageWidth"),
-                NumericField::create("ImageHeight"),
-                DropdownField::create("ImageResizeType")
-                    ->setSource($this->dbObject("ImageResizeType")->enumValues())
-            ]
-        );
+        if (!self::config()->get('scale_from_template')) {
+            $fields->addFieldsToTab(
+                'Root.Settings',
+                [
+                    NumericField::create("ImageWidth"),
+                    NumericField::create("ImageHeight"),
+                    DropdownField::create("ImageResizeType")
+                        ->setSource($this->dbObject("ImageResizeType")->enumValues())
+                ]
+            );
+        }
 
         return $fields;
     }
